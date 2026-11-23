@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BookStore - Online Bookstore</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f5f6fa;color:#222}
+header{background:#1f3a5f;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+nav button{background:none;border:0;color:#fff;font-size:15px;margin-left:16px;cursor:pointer;padding:6px 10px;border-radius:4px}
+nav button.active{background:#3d6aa8}
+main{max-width:900px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border-radius:8px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px #0002}
+input{padding:8px;margin:4px;border:1px solid #bbb;border-radius:4px}
+button.b{background:#2e7d32;color:#fff;border:0;padding:8px 12px;border-radius:4px;cursor:pointer}
+button.d{background:#c62828}
+.hidden{display:none}
+</style></head><body>
+<header><h2>📚 BookStore</h2>
+<nav><button id="t-books" class="active" onclick="show('books')">View Books</button>
+<button id="t-cart" onclick="show('cart')">Cart (<span id="cc">0</span>)</button>
+<button id="t-manage" onclick="show('manage')">Manage Books</button></nav></header>
+<main>
+<section id="books"><input id="q" placeholder="Search by title or author" size="40" oninput="loadBooks()"><div id="blist"></div></section>
+<section id="cart" class="hidden"><h3>Your Cart</h3><div id="clist"></div><h3>Total: ₹<span id="total">0</span></h3></section>
+<section id="manage" class="hidden"><h3>Add a Book</h3>
+<input id="mt" placeholder="Title"><input id="ma" placeholder="Author"><input id="mp" type="number" placeholder="Price">
+<button class="b" onclick="addBook()">Add Book</button><div id="mlist" style="margin-top:14px"></div></section>
+</main>
+<script>
+const api=(u,o)=>fetch(u,o).then(r=>r.status===204?null:r.json());
+function show(id){['books','cart','manage'].forEach(s=>{document.getElementById(s).classList.toggle('hidden',s!==id);document.getElementById('t-'+s).classList.toggle('active',s===id)});
+ if(id==='cart')loadCart(); if(id==='manage')loadManage(); if(id==='books')loadBooks();}
+async function loadBooks(){const b=await api('/api/books?q='+encodeURIComponent(q.value));
+ blist.innerHTML=b.map(x=>`<div class="card"><div><b>${x.title}</b><br>${x.author} — ₹${x.price}</div><button class="b" onclick="addCart(${x.id})">Add to Cart</button></div>`).join('')||'No books found';}
+async function addCart(id){await api('/api/cart/'+id,{method:'POST'});updateCount();}
+async function updateCount(){const c=await api('/api/cart');cc.textContent=c.items.reduce((s,i)=>s+i.qty,0);}
+async function loadCart(){const c=await api('/api/cart');clist.innerHTML=c.items.map(x=>`<div class="card"><div><b>${x.title}</b> × ${x.qty}</div><div>₹${x.price*x.qty} <button class="b d" onclick="rmCart(${x.id})">Remove</button></div></div>`).join('')||'Cart is empty';total.textContent=c.total;updateCount();}
+async function rmCart(id){await api('/api/cart/'+id,{method:'DELETE'});loadCart();}
+async function loadManage(){const b=await api('/api/books');mlist.innerHTML=b.map(x=>`<div class="card"><div><b>${x.title}</b> — ${x.author} (₹${x.price})</div><div><button class="b" onclick="editBook(${x.id},${x.price})">Edit Price</button> <button class="b d" onclick="delBook(${x.id})">Delete</button></div></div>`).join('');}
+async function addBook(){await api('/api/books',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:mt.value,author:ma.value,price:mp.value})});mt.value=ma.value=mp.value='';loadManage();}
+async function editBook(id,p){const n=prompt('New price',p);if(n){await api('/api/books/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({price:Number(n)})});loadManage();}}
+async function delBook(id){await api('/api/books/'+id,{method:'DELETE'});loadManage();}
+loadBooks();updateCount();
+</script></body></html>

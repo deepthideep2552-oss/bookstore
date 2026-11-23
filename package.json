@@ -1,0 +1,13 @@
+{
+  "name": "bookstore",
+  "version": "1.0.0",
+  "description": "BookStore - simple online bookstore (view, search, cart, manage books)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/app.test.js"
+  },
+  "dependencies": {
+    "express": "4.19.2"
+  }
+}
