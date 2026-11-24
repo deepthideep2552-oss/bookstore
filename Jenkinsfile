@@ -8,8 +8,11 @@ pipeline {
     }
 
     environment {
+            environment {
         IMAGE_NAME = 'bookstore'
         CONTAINER  = 'bookstore-app'
+        PATH = "C:\\Users\\diisr\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
+    }
     }
 
     stages {
