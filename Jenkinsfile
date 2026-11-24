@@ -1,18 +1,14 @@
-// Jenkins on Windows -> uses 'bat'. If Jenkins runs on Linux/Mac, replace 'bat' with 'sh'.
 pipeline {
     agent any
 
     triggers {
-        // Auto-trigger on new commits (checks GitHub every 2 minutes)
         pollSCM('H/2 * * * *')
     }
 
     environment {
-            environment {
         IMAGE_NAME = 'bookstore'
         CONTAINER  = 'bookstore-app'
         PATH = "C:\\Users\\diisr\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
-    }
     }
 
     stages {
